@@ -1,94 +1,116 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <title>OSC Receiver (Browser)</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <style>
-        body { font-family: system-ui, sans-serif; margin: 2rem; color: #222; }
-        .status { margin-bottom: 1rem; padding: 0.5rem 0.75rem; border-radius: 6px; background: #f4f4f4; display: inline-block; }
-        .ok { background: #e8f8ef; color: #106a39; }
-        .warn { background: #fff4e5; color: #8a4b00; }
-        pre { background: #111; color: #eee; padding: 1rem; border-radius: 6px; overflow: auto; }
-        ul { list-style: none; padding: 0; }
-        li { margin: 0.5rem 0; }
-        .msg { border: 1px solid #ddd; border-radius: 6px; padding: 0.5rem 0.75rem; }
-        .small { color: #666; font-size: 0.9em; }
-    </style>
-</head>
-<body>
-<h1>OSC Receiver</h1>
-<div id="status" class="status warn">Connecting…</div>
+  <head>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://unpkg.com/typewriter-effect@latest/dist/core.js"></script>
+    <link rel="stylesheet" href="https://use.typekit.net/gyn3oyz.css" media="print" onload="this.media='all'">
+    <meta charset="UTF-8">
+    <meta name="description" content="Looking back to a familiar moment in the past, the view widens as we grow ever more distant. New topologies become visible.s">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="preload" as="image" href="https://archive-emotion.xyz/images/circle-trigger.webp">
+    
+    <title>Archive Emotion</title>
+  </head>
+  <body>
+    <div class="menu-toggle-wrapper"><button id="menu-toggle" onclick="toggleMenu()" aria-label="Toggle Menu"></button><div id="menu-toggle-blur"></div></div>
+    <button id="reset" onclick="reset()" aria-label="Reset Player"></button>
+    <div id="ui" onclick="toggleMenu()"">
+      <div id="radial-ui">
+        <div class="play-wrapper" id="play-wrapper-1">
+        <button class="play" id="play-1" onclick="playTrack(0)" aria-label="Play Track 1">
+        
+        </button>
+        <div id="song-blur"></div>
+        </div>
+        <div class="play-wrapper" id="play-wrapper-2">
+        <button class="play" id="play-2" onclick="playTrack(1)" aria-label="Play Track 2">
 
-<p class="small">
-    This page connects to a WebSocket bridge and displays incoming OSC messages.
-    Send OSC UDP messages to the server (default <code>localhost:57121</code>).
-</p>
+        </button>
+        </div>
+        <div class="play-wrapper" id="play-wrapper-3">
+        <button class="play" id="play-3" onclick="playTrack(2)" aria-label="Play Track 3">
 
-<h2>Latest message</h2>
-<pre id="latest">No messages yet.</pre>
+        </button>
+        </div>
+        <div class="play-wrapper" id="play-wrapper-4">
+        <button class="play" id="play-4" onclick="playTrack(3)" aria-label="Play Track 4">
 
-<h2>Log</h2>
-<ul id="log"></ul>
+        </button>
+        </div>
+        <div class="play-wrapper" id="play-wrapper-5">
+        <button class="play" id="play-5" onclick="playTrack(4)" aria-label="Play Track 5">
 
-<script>
-    (function () {
-        const statusEl = document.getElementById("status");
-        const latestEl = document.getElementById("latest");
-        const logEl = document.getElementById("log");
+        </button>
+        </div>
+        <div class="play-wrapper" id="play-wrapper-6">
+        <button class="play" id="play-6" onclick="playTrack(5)" aria-label="Play Track 6">
 
-        function setStatus(text, ok) {
-            statusEl.textContent = text;
-            statusEl.className = "status " + (ok ? "ok" : "warn");
-        }
+        </button>
+        </div>
+        <div class="play-wrapper" id="play-wrapper-7">
+        <button class="play" id="play-7" onclick="playTrack(6)" aria-label="Play Track 7">
 
-        function addLog(entry) {
-            const li = document.createElement("li");
-            li.className = "msg";
-            li.textContent = entry;
-            logEl.prepend(li);
-            // keep the log to a reasonable size
-            while (logEl.children.length > 100) logEl.removeChild(logEl.lastChild);
-        }
+        </button>
+        </div>
 
-        function connect() {
-            const proto = location.protocol === "https:" ? "wss" : "ws";
-            const ws = new WebSocket(`${proto}://${location.host}/osc`);
+        <button id="text-toggle" onclick="openText()" aria-label="Open Text Viewer">
+        </button>
 
-            ws.addEventListener("open", () => {
-                setStatus("Connected", true);
-            });
+      </div>
+    </div>
+    <div id="text-modal" class="animate-toggle">
+      <div id="text-close" onclick="closeText()"><span class="icon icon-close"></span></div>
+      <div id="text-wrapper">
+        <div id="text">
+          <h1>Notes on an archive</h1>
+          <div id="animated-text"></div>
+          <p id="screen-reader">
+            Looking back to a familiar moment in the past, the view widens as we grow ever more distant. New topologies become visible. <br />
+            Sometimes this shape gifts deeper understanding. But sometimes we see something that was never real. 
+            There is nothing solid in sand.<br />
+            Archiving is a way to remember that shelters our memories from this distorting flow of time.<br />4
+            Often disguising the subjective as objective, archives can still offer a way to make sense of the past. <br />
+            Archives do this by being a container for what we place inside. They trace an outline around the fragments within, giving them form. <br />
+            This is how the archive becomes a stable location. A firm foundation - from which we can take flight.<br />
+            Because archiving is time travel. <br />
+            By holding our memories in time, the archive becomes a place we can return to - even though there's no way back.<br />
+            As the past prints the future into the present, this portal also goes forward. <br />
+            This archive is an object through which a message can be sent. <br />
+            Within a future, and in all the din, another beacon.<br />
+            He was here, and I loved him. <br />
+            —<br />
+            transmitter@archive-emotion.xyz <br />
+          </p>
+          <!-- <span class="icon icon-next" onclick="fwdText()" id="forward"></span> -->
+        </div>
+      </div>
+      <div id="modal-overlay"></div>
+    </div>
+    <div id="preload-image">
+      <img
+      srcset="https://archive-emotion.xyz/images/still-final-blk-400w.avif 400w, https://archive-emotion.xyz/images/still-final-blk-600w.avif 600w, https://archive-emotion.xyz/images/still-final-blk-800w.avif 800w, https://archive-emotion.xyz/images/still-final-blk-1000w.avif 1000w, https://archive-emotion.xyz/images/still-final-blk-1200w.avif 1200w, https://archive-emotion.xyz/images/still-final-blk-1600w.avif 1600w, https://archive-emotion.xyz/images/still-final-blk-2000w.avif 2000w"
+      sizes="(max-width: 400px) 400px, (max-width: 600px) 600px, (max-width: 800px) 800px, (max-width: 1000px) 1000px, (max-width: 1200px) 1200px, (max-width: 1600px) 1600px, (min-width: 1601px) 2000px"
+      src="https://archive-emotion.xyz/images/still-final-blk.jpg"
+      alt=""
+      width="3274"
+      height="3274"
+      />
+    </div>
+    <canvas id="c"></canvas>
+    <canvas id="cX"></canvas>
+    <canvas id="l" class="lights"></canvas>
+    <canvas id="l-rev" class="lights flipped"></canvas>
+    <div id="video-preloader">
+      <video loop muted id="video1" crossorigin="anonymous" preload="metadata"></video>
+      <video loop muted id="video2" crossorigin="anonymous" preload="metadata"></video>
+    </div>
+    <div id="audio-preloader">
+      <audio id="audio" preload="metadata" >HTML5 audio not supported</audio>
+    </div>
 
-            ws.addEventListener("message", (ev) => {
-                try {
-                    const payload = JSON.parse(ev.data);
-                    if (payload.type === "osc") {
-                        // payload.message is like: { address: "/path", args: [...] }
-                        const pretty = JSON.stringify(payload.message, null, 2);
-                        latestEl.textContent = pretty;
-                        addLog(`${payload.message.address} ${JSON.stringify(payload.message.args)}`);
-                    } else if (payload.type === "status") {
-                        addLog(payload.message);
-                    } else {
-                        addLog(ev.data);
-                    }
-                } catch (e) {
-                    addLog(ev.data);
-                }
-            });
+    <script type="text/javascript" src="scripts.js"></script>
 
-            ws.addEventListener("close", () => {
-                setStatus("Disconnected. Reconnecting in 2s…", false);
-                setTimeout(connect, 2000);
-            });
 
-            ws.addEventListener("error", () => {
-                // Let the close handler do the reconnect
-            });
-        }
-
-        connect();
-    })();
-</script>
-</body>
+  </body>
 </html>
+
