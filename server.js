@@ -13,7 +13,6 @@ app.use(express.static("public"));
 
 const server = http.createServer(app);
 
-// WebSocket server on the same HTTP server (path /osc)
 const wss = new WebSocketServer({ server, path: "/osc" });
 
 wss.on("connection", (ws) => {
@@ -34,7 +33,6 @@ function broadcast(obj) {
     }
 }
 
-// OSC UDP listener
 const udpPort = new osc.UDPPort({
     localAddress: OSC_UDP_ADDRESS,
     localPort: OSC_UDP_PORT

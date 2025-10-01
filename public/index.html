@@ -14,7 +14,7 @@
   <body>
     <div class="menu-toggle-wrapper"><button id="menu-toggle" onclick="toggleMenu()" aria-label="Toggle Menu"></button><div id="menu-toggle-blur"></div></div>
     <button id="reset" onclick="reset()" aria-label="Reset Player"></button>
-    <div id="ui" onclick="toggleMenu()"">
+    <div id="ui" onclick="toggleMenu()">
       <div id="radial-ui">
         <div class="play-wrapper" id="play-wrapper-1">
         <button class="play" id="play-1" onclick="playTrack(0)" aria-label="Play Track 1">
@@ -109,6 +109,7 @@
     </div>
 
     <script type="text/javascript" src="scripts.js"></script>
+    <script type="text/javascript" src="js/osc-socket.js"></script>
 
 
   </body>

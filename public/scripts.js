@@ -88,7 +88,7 @@ function zoomImage() {
 const content = {
     songs: [
         {   
-            video: "videos/Video1-compressed.mp4",
+            video: "videos/Video1.mp4",
             blendMode: "screen",
             filter: "blur(15px) drop-shadow(0 0 30px rgba(51,180,172,1)",
             audio: "audio/01.mp3",
@@ -100,7 +100,7 @@ const content = {
             bpm: 91
         },
         {
-            video: "videos/Video2-compressed.mp4",
+            video: "videos/Video2.mp4",
             blendMode: "screen",
             filter: "blur(15px) drop-shadow(0 0 30px #e47e30) hue-rotate(210deg)",
             baseColor: "rgb(255, 200, 220)",
@@ -112,7 +112,7 @@ const content = {
             bpm: 130
         },
         {
-            video: "videos/Video3-compressed.mp4",
+            video: "videos/Video3.mp4",
             blendMode: "screen",
             filter: "blur(15px) drop-shadow(0 0 30px #33B4AC) hue-rotate(45deg)",
             baseColor: "rgb(255, 200, 220)",
@@ -124,7 +124,7 @@ const content = {
             bpm: 84
         },
         {
-            video: "videos/Video4-compressed.mp4",
+            video: "videos/Video4.mp4",
             blendMode: "hard-light",
             filter: "blur(15px) drop-shadow(0 0 30px rgba(51,180,172,1)",
             baseColor: "rgb(255, 200, 220)",
@@ -136,7 +136,7 @@ const content = {
             bpm: 139
         },
         {
-            video: "videos/Video7-compressed.mp4",
+            video: "videos/Video7.mp4",
             blendMode: "screen",
             filter: "blur(15px) drop-shadow(0 0 30px #A7FFFA) hue-rotate(45deg)",
             baseColor: "rgb(255, 200, 220)",
@@ -148,7 +148,7 @@ const content = {
             bpm: 120
         },
         {
-            video: "videos/Video5-compressed.mp4",
+            video: "videos/Video5.mp4",
             blendMode: "screen",
             filter: "blur(15px) drop-shadow(0 0 30px #A7FFFA) hue-rotate(45deg)",
             baseColor: "rgb(255, 200, 220)",
@@ -160,7 +160,7 @@ const content = {
             bpm: 90
         },
         {
-            video: "videos/Video6-compressed.mp4",
+            video: "videos/Video6.mp4",
             blendMode: "normal",
             filter: "blur(15px) drop-shadow(0 0 30px rgba(51,180,172,1)",
             baseColor: "rgb(255, 200, 220)",
@@ -173,10 +173,7 @@ const content = {
         },
     ]
 }
-    vLeft.addEventListener(
-      "play",
-      () => {
-
+    vLeft.addEventListener("play", () => {
         if (cw >= ch) {
           scale = canvas.height;
 
@@ -209,9 +206,7 @@ const content = {
       false
     );
     
-    vLeft.addEventListener(
-      "pause",
-      () => {
+    vLeft.addEventListener("pause", () => {
         pauseMusic();
       },
       false
@@ -350,7 +345,9 @@ const content = {
 
     }
 
-    function playTrack(songId) {      
+    function playTrack(songId) {
+        console.log('playing track', songId);
+        // toggleMenu();
       active = songId;
       context.clearRect(0, 0, canvas.width, canvas.height);
       loaderImage.style.opacity = "0";
@@ -385,11 +382,7 @@ const content = {
 
 //typewriter effect
 var animatedText = document.getElementById('animated-text');
-var typewriter = new Typewriter(animatedText,
-  {
-    loop: false,
-    delay: 50
-  });
+var typewriter = new Typewriter(animatedText, {loop: false, delay: 50});
 
 typewriter.pauseFor(1000)
   .typeString('Looking back to a familiar moment in the past, the view widens as we grow ever more distant. New topologies become visible.')
@@ -903,44 +896,4 @@ document.body.addEventListener('mousemove', function (e) {
   mouseYPercentage = e.clientY / window.innerHeight;
 })
 
-function handleWSMessage(msg) {
-    console.log(msg);
-}
 
-function connect() {
-    const proto = location.protocol === "https:" ? "wss" : "ws";
-    const ws = new WebSocket(`${proto}://${location.host}/osc`);
-
-    ws.addEventListener("open", () => {
-        console.log("Connected", true);
-    });
-
-    ws.addEventListener("message", (ev) => {
-        try {
-            const payload = JSON.parse(ev.data);
-            if (payload.type === "osc") {
-                // payload.message is like: { address: "/path", args: [...] }
-                const pretty = JSON.stringify(payload.message, null, 2);
-                // latestEl.textContent = pretty;
-                handleWSMessage(`${payload.message.address} ${JSON.stringify(payload.message.args)}`);
-            } else if (payload.type === "status") {
-                handleWSMessage(payload.message);
-            } else {
-                handleWSMessage(ev.data);
-            }
-        } catch (e) {
-            handleWSMessage(ev.data);
-        }
-    });
-
-    ws.addEventListener("close", () => {
-        console.log("Disconnected. Reconnecting in 2s…", false);
-        setTimeout(connect, 2000);
-    });
-
-    ws.addEventListener("error", () => {
-        // Let the close handler do the reconnect
-    });
-}
-
-connect()
