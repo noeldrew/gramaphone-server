@@ -28,10 +28,6 @@ function connect() {
         try {
             const payload = JSON.parse(ev.data);
             if (payload.type === "osc") {
-                // payload.message is like: { address: "/path", args: [...] }
-                // const pretty = JSON.stringify(payload.message, null, 2);
-                // latestEl.textContent = pretty;
-                // handleWSMessage(`${payload.message.address} ${JSON.stringify(payload.message.args)}`);
                 handleWSMessage(payload.message.address, payload.message.args);
             } else if (payload.type === "status") {
                 //handleWSMessage(payload.message);
@@ -53,11 +49,11 @@ function connect() {
     });
 }
 
-let evt = new MouseEvent("click", {
-    bubbles: true,
-    cancelable: true,
-    view: window,
-  });
-document.dispatchEvent(evt);
+// let evt = new MouseEvent("click", {
+//     bubbles: true,
+//     cancelable: true,
+//     view: window,
+//   });
+// document.dispatchEvent(evt);
 
 connect()
