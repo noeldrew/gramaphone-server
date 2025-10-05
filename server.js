@@ -3,6 +3,7 @@ const express = require("express");
 const http = require("http");
 const { WebSocketServer } = require("ws");
 const osc = require("osc");
+var exec = require('child_process').exec;
 
 const HTTP_PORT = process.env.PORT || 3000;
 const OSC_UDP_PORT = Number(process.env.OSC_UDP_PORT) || 57121;
@@ -12,6 +13,7 @@ const app = express();
 app.use(express.static("public"));
 
 const server = http.createServer(app);
+server.on('listening', () => console.log('Server is listening on port ' + server.address().port));
 
 const wss = new WebSocketServer({ server, path: "/osc" });
 
@@ -55,9 +57,20 @@ udpPort.on("error", (err) => {
 
 udpPort.open();
 
+function ExecuteChromium() {
+    exec("chromium-browser --kiosk http://localhost:3000", function(error, stdout, stderr) {
+        console.log("stdout: " + stdout);
+        console.log("stderr: " + stderr);
+        if (error !== null) {
+            console.log("exec errror: " + error);
+        }
+    });
+}
+
 server.listen(HTTP_PORT, () => {
     console.log(`HTTP server listening at http://localhost:${HTTP_PORT}`);
     console.log(`Send OSC messages to udp://${OSC_UDP_ADDRESS}:${OSC_UDP_PORT}`);
+    //ExecuteChromium();
 });
 
 process.on("SIGINT", () => {
