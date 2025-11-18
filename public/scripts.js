@@ -16,6 +16,7 @@ var cXcontext = transCanvas.getContext("2d");
 var active = 0;
 var songBPM;
 var moveTimeout;
+var redrawCloneId = null;
 var duration;
 var xPos = 0;
 var mDur;
@@ -24,6 +25,8 @@ var hasZoomed = false;
 var cw, ch, cx, scale, active;
 var loaderImage = document.getElementById("preload-image");
 var audioContextExists = false;
+var freqArray = null;
+var waveArray = null;
 
 // resize canvas
 function fitCanvas() {
@@ -87,8 +90,8 @@ function zoomImage() {
 
 const content = {
     songs: [
-        {   
-            video: "videos/Video1.mp4",
+        {
+            video: "videos/Video1.webm",
             blendMode: "screen",
             filter: "blur(15px) drop-shadow(0 0 30px rgba(51,180,172,1)",
             audio: "audio/01.mp3",
@@ -100,7 +103,7 @@ const content = {
             bpm: 91
         },
         {
-            video: "videos/Video2.mp4",
+            video: "videos/Video2.webm",
             blendMode: "screen",
             filter: "blur(15px) drop-shadow(0 0 30px #e47e30) hue-rotate(210deg)",
             baseColor: "rgb(255, 200, 220)",
@@ -112,7 +115,7 @@ const content = {
             bpm: 130
         },
         {
-            video: "videos/Video3.mp4",
+            video: "videos/Video3.webm",
             blendMode: "screen",
             filter: "blur(15px) drop-shadow(0 0 30px #33B4AC) hue-rotate(45deg)",
             baseColor: "rgb(255, 200, 220)",
@@ -124,7 +127,7 @@ const content = {
             bpm: 84
         },
         {
-            video: "videos/Video4.mp4",
+            video: "videos/Video4.webm",
             blendMode: "hard-light",
             filter: "blur(15px) drop-shadow(0 0 30px rgba(51,180,172,1)",
             baseColor: "rgb(255, 200, 220)",
@@ -136,7 +139,7 @@ const content = {
             bpm: 139
         },
         {
-            video: "videos/Video7.mp4",
+            video: "videos/Video7.webm",
             blendMode: "screen",
             filter: "blur(15px) drop-shadow(0 0 30px #A7FFFA) hue-rotate(45deg)",
             baseColor: "rgb(255, 200, 220)",
@@ -148,7 +151,7 @@ const content = {
             bpm: 120
         },
         {
-            video: "videos/Video5.mp4",
+            video: "videos/Video5.webm",
             blendMode: "screen",
             filter: "blur(15px) drop-shadow(0 0 30px #A7FFFA) hue-rotate(45deg)",
             baseColor: "rgb(255, 200, 220)",
@@ -160,7 +163,7 @@ const content = {
             bpm: 90
         },
         {
-            video: "videos/Video6.mp4",
+            video: "videos/Video6.webm",
             blendMode: "normal",
             filter: "blur(15px) drop-shadow(0 0 30px rgba(51,180,172,1)",
             baseColor: "rgb(255, 200, 220)",
@@ -173,14 +176,24 @@ const content = {
         },
     ]
 }
-    vLeft.addEventListener("play", () => {
+    vLeft.addEventListener(
+      "play",
+      () => {
+
         if (cw >= ch) {
           scale = canvas.height;
 
         } else {
           scale = canvas.width;
         }
-          clearTimeout(moveTimeout);
+          if (moveTimeout) {
+            cancelAnimationFrame(moveTimeout);
+            moveTimeout = null;
+          }
+          if (redrawCloneId) {
+            cancelAnimationFrame(redrawCloneId);
+            redrawCloneId = null;
+          }
           if (audioContextExists) {
           } else {
             var audioContext = new AudioContext();
@@ -192,21 +205,25 @@ const content = {
             analyser.fftSize = 32;
             audioContext.resume();
           }
-       
+
           playMusic();
           var au = document.getElementById("audio");
+          au.onloadedmetadata = null;
           au.onloadedmetadata = function() {
               duration = au.duration;
               bpm = content.songs[active].bpm;
               mDur = ((duration / 60)*bpm) * 2;
               var n = 0;
+              redrawClone();
               bumpVideo(vLeft, vRight, n);
           };
       },
       false
     );
     
-    vLeft.addEventListener("pause", () => {
+    vLeft.addEventListener(
+      "pause",
+      () => {
         pauseMusic();
       },
       false
@@ -215,7 +232,12 @@ const content = {
     function playMusic() {
       a.volume = 1;
       a.load();
-      a.play();
+
+      // Wait for audio to be ready
+      a.oncanplaythrough = function() {
+        a.play();
+        a.oncanplaythrough = null; // Remove handler
+      };
     }
     
     function pauseMusic() {
@@ -230,21 +252,21 @@ const content = {
       // audio analyser
       var freq = ((1000 * 60)/bpm)/2;
       const bufferLength = analyser.frequencyBinCount;
-      const freqArray = new Uint8Array(bufferLength);
-      analyser.getByteFrequencyData(freqArray);
 
-      const waveArray = new Float32Array(bufferLength);
+      // Reuse typed arrays to avoid memory allocation every frame
+      if (!freqArray || freqArray.length !== bufferLength) {
+        freqArray = new Uint8Array(bufferLength);
+        waveArray = new Float32Array(bufferLength);
+      }
+
+      analyser.getByteFrequencyData(freqArray);
       analyser.getFloatTimeDomainData(waveArray);
 
       var maximum;
 
       maximum = content.songs[active].maxOffset;
 
-      redrawClone();
-
-
-
-      function convertRange( value, r1, r2 ) { 
+      function convertRange( value, r1, r2 ) {
         return ( value - r1[ 0 ] ) * ( r2[ 1 ] - r2[ 0 ] ) / ( r1[ 1 ] - r1[ 0 ] ) + r2[ 0 ];
       }
       var offset = convertRange(waveArray[0], [0, 1], [0 , maximum]);
@@ -261,9 +283,12 @@ const content = {
     function redrawClone() {
       cloneLights(lightsCanvas);
 
-      requestAnimationFrame(function () {
-        redrawClone();
-      });
+      // Only continue if video is playing
+      if (vLeft && !vLeft.paused && !vLeft.ended) {
+        redrawCloneId = requestAnimationFrame(redrawClone);
+      } else {
+        redrawCloneId = null;
+      }
     }
     
     // draw video function - depreciated
@@ -332,7 +357,22 @@ const content = {
 
     function reset() {
       pauseMusic();
-      clearTimeout(moveTimeout);
+
+      // Cancel all animation frames
+      if (moveTimeout) {
+        cancelAnimationFrame(moveTimeout);
+        moveTimeout = null;
+      }
+      if (redrawCloneId) {
+        cancelAnimationFrame(redrawCloneId);
+        redrawCloneId = null;
+      }
+
+      // Pause northern lights
+      if (nl1) {
+        nl1.pause();
+      }
+
       var reset = document.getElementById("reset");
       reset.classList.remove("active");
       var x = document.getElementById("l");
@@ -346,18 +386,50 @@ const content = {
     }
 
     function playTrack(songId) {
-        console.log('playing track', songId);
-        // toggleMenu();
+      // Stop any existing animations
+      if (moveTimeout) {
+        cancelAnimationFrame(moveTimeout);
+        moveTimeout = null;
+      }
+      if (redrawCloneId) {
+        cancelAnimationFrame(redrawCloneId);
+        redrawCloneId = null;
+      }
+
+      // Pause current videos
+      vLeft.pause();
+      vRight.pause();
+
+      // Restart northern lights if paused
+      if (nl1 && !nl1.running) {
+        nl1.start();
+      }
+
       active = songId;
       context.clearRect(0, 0, canvas.width, canvas.height);
       loaderImage.style.opacity = "0";
       vidWrap.style.opacity = "1";
+
+      // Set sources
       vLeft.src = content.songs[songId].video;
       vRight.src = content.songs[songId].video;
       a.src = content.songs[songId].audio;
-      // v.play();
-      vLeft.play();
-      vRight.play();
+
+      // Load the video first, then play
+      vLeft.load();
+      vRight.load();
+
+      // Wait for video to be ready before playing
+      vLeft.oncanplay = function() {
+        vLeft.play();
+        vLeft.oncanplay = null; // Remove handler
+      };
+
+      vRight.oncanplay = function() {
+        vRight.play();
+        vRight.oncanplay = null; // Remove handler
+      };
+
       var x = document.getElementById("l");
       x.classList.add("active");
       x.style.mixBlendMode = content.songs[songId].blendMode;
@@ -366,7 +438,7 @@ const content = {
       var y = document.getElementById("l-rev");
       y.classList.add("active");
       y.style.mixBlendMode = content.songs[songId].blendMode;
-      y.style.filter = content.songs[songId].filter;      
+      y.style.filter = content.songs[songId].filter;
       y.style.opacity = content.songs[songId].opacity;
       y.style.opacity = content.songs[songId].opacity;
       var reset = document.getElementById("reset");
@@ -382,7 +454,11 @@ const content = {
 
 //typewriter effect
 var animatedText = document.getElementById('animated-text');
-var typewriter = new Typewriter(animatedText, {loop: false, delay: 50});
+var typewriter = new Typewriter(animatedText,
+  {
+    loop: false,
+    delay: 50
+  });
 
 typewriter.pauseFor(1000)
   .typeString('Looking back to a familiar moment in the past, the view widens as we grow ever more distant. New topologies become visible.')
@@ -895,5 +971,3 @@ document.body.addEventListener('mousemove', function (e) {
   mouseXPercentage = e.clientX / window.innerWidth;
   mouseYPercentage = e.clientY / window.innerHeight;
 })
-
-

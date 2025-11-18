@@ -1,7 +1,7 @@
 function handleWSMessage(address, args) {
     if(args[0] === 1) {
-        console.log(address);
-        switch (address.split('/')[1]) {
+        const command = address.split('/')[1];
+        switch (command) {
             case 'toggle':
                 toggleMenu();
                 break;
@@ -9,7 +9,8 @@ function handleWSMessage(address, args) {
                 reset();
                 break;
             default:
-                playTrack(parseInt(address.split('/')[1]));
+                const trackNum = parseInt(command);
+                playTrack(trackNum);
                 break;
 
         }
@@ -21,7 +22,7 @@ function connect() {
     const ws = new WebSocket(`${proto}://${location.host}/osc`);
 
     ws.addEventListener("open", () => {
-        console.log("Connected", true);
+        // Connected to WebSocket
     });
 
     ws.addEventListener("message", (ev) => {
@@ -29,18 +30,13 @@ function connect() {
             const payload = JSON.parse(ev.data);
             if (payload.type === "osc") {
                 handleWSMessage(payload.message.address, payload.message.args);
-            } else if (payload.type === "status") {
-                //handleWSMessage(payload.message);
-            } else {
-                //handleWSMessage(ev.data);
             }
         } catch (e) {
-            //handleWSMessage(ev.data);
+            // Error parsing message
         }
     });
 
     ws.addEventListener("close", () => {
-        console.log("Disconnected. Reconnecting in 2s…", false);
         setTimeout(connect, 2000);
     });
 
