@@ -12,7 +12,7 @@ const OSC_UDP_ADDRESS = process.env.OSC_UDP_ADDRESS || "0.0.0.0";
 // Default browser command based on platform
 const DEFAULT_BROWSER = process.platform === 'darwin'
     ? '/Applications/Chromium.app/Contents/MacOS/Chromium'
-    : 'chromium-browser';
+    : 'chromium';
 const BROWSER_COMMAND = process.env.BROWSER_COMMAND || DEFAULT_BROWSER;
 
 const app = express();

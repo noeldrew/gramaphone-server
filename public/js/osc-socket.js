@@ -1,15 +1,23 @@
+let isToggled = false;
+
 function handleWSMessage(address, args) {
     if(args[0] === 1) {
         const command = address.split('/')[1];
         switch (command) {
             case 'toggle':
                 toggleMenu();
+                isToggled = !isToggled;
                 break;
             case 'reset':
                 reset();
+                isToggled = false;
                 break;
             default:
                 const trackNum = parseInt(command);
+                if(isToggled) {
+                    toggleMenu()
+                    isToggled = false;
+                }
                 playTrack(trackNum);
                 break;
 
