@@ -6,21 +6,15 @@ function handleWSMessage(address, args) {
         switch (command) {
             case 'toggle':
                 toggleMenu();
-                isToggled = !isToggled;
                 break;
             case 'reset':
                 reset();
-                isToggled = false;
                 break;
             default:
                 const trackNum = parseInt(command);
-                if(isToggled) {
-                    toggleMenu()
-                    isToggled = false;
-                }
                 playTrack(trackNum);
+                closeMenu();
                 break;
-
         }
     }
 }
